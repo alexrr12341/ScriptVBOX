@@ -1,0 +1,140 @@
+#!/bin/bash
+#Este comando instalara feh.
+instalar_feh()
+{
+	instaladorfeh=`dpkg -s feh | egrep -o installed`
+	if [ $instaladorfeh = "installed" ];
+	then
+		clear
+		echo "feh esta instalado."
+	else
+		clear
+		echo "¿Desea instalar el paquete feh?(Mostrador de fotos) [S para instalar] "
+		read opcion
+		if [ $opcion = 'S' -o $opcion = 's' ];
+		then
+			if [ $USER = "root" ];
+			then
+				apt-get install feh
+				clear
+			else
+				"No esta como root."
+			fi
+		else
+			echo "No se instalará el programa."
+		fi
+	fi
+}
+
+#Este comando instalara virtualbox.
+instalar_vbox()
+{
+        instalarvbox=`dpkg -s virtualbox-6.0 | grep -o installed`
+        if [ $instalarvbox = "installed" ];
+	then
+		clear
+                echo "VirtualBox esta instalado."
+	else
+		clear
+		echo "VirtualBox no esta instalado"
+		echo "¿Desea instalar VirtualBox 6.0 junto a sus repositorios? [S para continuar] "
+		read opcion
+		if [ $opcion = "S" -o $opcion = 's' ];
+		then
+			if [ $USER = 'root' ];
+			then
+				read -p "¿Cual es su distribucion de linux? [stretch,jessie...] " distribucion
+				echo "deb https://download.virtualbox.org/virtualbox/debian $distribucion contrib" >> /etc/apt/sources.list
+				wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -
+				wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | apt-key add -
+				apt-get update
+				clear
+				echo "Instalando VirtualBox... Puede tardar varios minutos...."
+				sleep 3
+				apt-get install virtualbox-6.0
+			else
+				"No esta como root."
+			fi
+		else
+			echo "No se instalará el programa."
+		fi
+	fi
+}
+
+#Esta funcion iniciara maquinas virtuales mediante VBoxManage
+iniciar_vm()
+{
+	VBoxManage list -s vms | cut -d " " -f 1 | cut -d '"' -f 2
+	echo "Seleccione una Maquina Virtual."
+	read opcion
+	VBoxManage startvm $opcion
+}
+crear_vm()
+{
+	read -p "¿Como quieres nombrar a dicha maquina virtual? " NombreVM
+	parametro=$(VBoxManage list -s vms | cut -d " " -f 1 | cut -d '"' -f 2 | egrep -co $NombreVM$)
+	echo "$parametro"
+	if [[ $parametro -eq 0 ]];
+	then
+		VBoxManage createvm --register --name $NombreVM
+		clear
+		echo "Maquina creada y registrada."
+		echo -n "¿Cuantas CPUs quieres poner a tu MV? " &&  echo -n "(1 a" && echo " `nproc --all`)"
+		read cpu
+		#Este comando busca las CPUs que tiene el pc, tanto logicas como reales.
+		Cpus=`nproc --all`
+		if [ $cpu -lt $Cpus -a $cpu -ge 1 ];
+		then
+			echo "Se le pondran $cpu CPUs a su MV."
+		else
+			while true;
+			do
+				echo "¿Usted planea destruir su ordenador?"
+				echo -n "¿Cuantas CPUs quieres poner a tu MV? " &&  echo -n "(1 a" && echo " `nproc --all`)"
+				read cpu
+				if [ $cpu -lt $Cpus -a $cpu -ge 1 ];
+				then
+					echo "Se le pondran $cpu CPUs a su MV."
+					break
+				fi
+			done
+		fi
+		#Este comando busca la memoria Maxima que tiene nuestro ordenador en megas
+		memoria=$(free -m | grep Mem | awk {'print $2'})
+		echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(1 a " && echo "$memoria (En megas))"
+		read ram
+		if [ $ram -lt $memoria -a $ram -ge 1 ];
+		then
+			echo "Se le pondran $ram M a su MV."
+		else
+			while true;
+			do
+				echo "Usted planea destruir su ordenador?"
+				echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(1 a " && echo "$memoria (En megas))"
+                		read ram
+				if [ $ram -lt $memoria -a $ram -ge 1 ];
+				then
+					echo "Se le pondran $ram M a su MV."
+					break
+				fi
+			done
+		fi
+		#Esto te preguntará sobre el sistema operativo, te dara una lista
+		echo "¿Que sistema operativo quiere asignarle a su MV?"
+		typeset -A menu
+		contador=1
+		exec 3< SistemasOperativos
+		while read linea <&3
+		do
+			menu[$contador]=$linea
+			contador=$(($contador+1))
+		read so
+		VBoxManage modifyvm $NombreVM --cpus $cpu
+		VBoxManage modifyvm $NombreVM --memory $ram
+		VBoxManage modifyvm $NombreVM --ostype $so
+
+	else
+		clear
+		echo "Esa maquina ya esta creada."
+	fi
+}

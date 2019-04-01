@@ -1,0 +1,32 @@
+#!/bin/bash
+. ./FuncionesVBOX
+#Aqui pondremos las funciones con las que instalaremos virtual box 6.0 y feh(Un mostrador de fotos)
+while true;
+do
+	echo "Opcion 1-Instalar Programas.(root)"
+	echo "Opcion 2-Iniciar MV."
+	echo "Opcion 3-Crear MV."
+	echo "Opcion 0-Salir."
+	read opcion
+	if [ $opcion -eq 1 ];
+	then
+		if [ $USER = "root" ];
+		then
+			instalar_vbox
+			instalar_feh
+			clear
+			echo "Todos los programas estan instalados."
+		else
+			echo "No se podrá instalar los programas, no está como root."
+		fi
+	elif [ $opcion -eq 2 ];
+	then
+		iniciar_vm
+	elif [ $opcion -eq 3 ];
+	then
+		crear_vm
+	elif [ $opcion -eq 0 ];
+	then
+		break
+	fi
+done
