@@ -29,6 +29,7 @@ instalar_feh()
 #Este comando instalara virtualbox.
 instalar_vbox()
 {
+	clear
         instalarvbox=`dpkg -s virtualbox-6.0 | grep -o installed`
         if [ $instalarvbox = "installed" ];
 	then
@@ -61,19 +62,72 @@ instalar_vbox()
 	fi
 }
 
-#Esta funcion iniciara maquinas virtuales mediante VBoxManage
+instalar_dialog()
+{
+	clear
+	dialog=`dpkg -s dialog | grep -o installed`
+	if [ $dialog = "installed" ];
+	then
+		clear
+		echo "Dialog esta instalado."
+	else
+		clear
+		echo "Dialog no esta instalado."
+		echo "¿Desea instalar Dialog? [S para continuar]"
+		read opcion
+		if [ $opcion = "S" -o $opcion = 's' ];
+		then
+			if [ $USER = 'root' ];
+			then
+				apt-get install dialog
+			else
+				"No esta como root."
+			fi
+		else
+			echo "No se instalará el programa."
+		fi
+	fi
+		
+}
+
 iniciar_vm()
 {
-	VBoxManage list -s vms | cut -d " " -f 1 | cut -d '"' -f 2
-	echo "Seleccione una Maquina Virtual."
-	read opcion
-	VBoxManage startvm $opcion
+	clear
+	while true;
+	do
+		#Esto lista las maquinas virtuales que tenemos en nuestro ordenador y lo redirigimos a un fichero de texto
+		VBoxManage list -s vms | cut -d '"' -f 2 > maquinas.txt
+		typeset -a Menu
+		exec 3< ./maquinas.txt
+		Contador=1
+		while read linea <&3; do
+			echo "$Contador- $linea"
+			Menu[$Contador]="$linea"		# Añadimos elementos al array
+			Contador=$((Contador+1))	
+		done
+		echo "0- Salir"
+		echo ""
+		echo "Seleccione una Maquina Virtual."
+		read opcion
+		if [ $opcion -eq 0 ];
+		then
+			break
+		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
+		then
+			VBoxManage startvm ${Menu[$opcion]}
+			break
+		else
+			echo "Esa máquina no esta en la lista."
+			sleep 1
+			clear
+		fi
+	done
 }
 crear_vm()
 {
+	clear
 	read -p "¿Como quieres nombrar a dicha maquina virtual? " NombreVM
-	parametro=$(VBoxManage list -s vms | cut -d " " -f 1 | cut -d '"' -f 2 | egrep -co $NombreVM$)
-	echo "$parametro"
+	parametro=$(VBoxManage list -s vms | cut -d '"' -f 2 | egrep -co $NombreVM$)
 	if [[ $parametro -eq 0 ]];
 	then
 		VBoxManage createvm --register --name $NombreVM
@@ -101,40 +155,421 @@ crear_vm()
 		fi
 		#Este comando busca la memoria Maxima que tiene nuestro ordenador en megas
 		memoria=$(free -m | grep Mem | awk {'print $2'})
-		echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(1 a " && echo "$memoria (En megas))"
+		echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(512 a " && echo "$memoria (En megas))"
 		read ram
-		if [ $ram -lt $memoria -a $ram -ge 1 ];
+		if [ $ram -lt $memoria -a $ram -ge 512 ];
 		then
 			echo "Se le pondran $ram M a su MV."
 		else
 			while true;
 			do
-				echo "Usted planea destruir su ordenador?"
-				echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(1 a " && echo "$memoria (En megas))"
+				echo "¿Usted planea destruir su ordenador?"
+				echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(512 a " && echo "$memoria (En megas))"
                 		read ram
-				if [ $ram -lt $memoria -a $ram -ge 1 ];
+				if [ $ram -lt $memoria -a $ram -ge 512 ];
 				then
 					echo "Se le pondran $ram M a su MV."
 					break
 				fi
 			done
+
 		fi
 		#Esto te preguntará sobre el sistema operativo, te dara una lista
-		echo "¿Que sistema operativo quiere asignarle a su MV?"
-		typeset -A menu
-		contador=1
-		exec 3< SistemasOperativos
-		while read linea <&3
+		while true;
 		do
-			menu[$contador]=$linea
-			contador=$(($contador+1))
-		read so
+			typeset -a MenuSO
+			exec 4< ./SistemasOperativos
+			Contador=1
+			while read linea <&4; do
+				echo "$Contador- $linea"
+				MenuSO[$Contador]="$linea"		# Añadimos elementos al array
+				Contador=$((Contador+1))	
+			done
+			echo "0- No especificar"
+			echo ""
+			echo "Seleccione un Sistema Operativo."
+			read so
+			if [ $so -eq 0 ];
+			then
+				break
+			elif [ $so -ge 1 -a $so -le ${#MenuSO[*]} ];
+			then
+				VBoxManage modifyvm $NombreVM --ostype ${MenuSO[$so]}
+				break
+			else
+				echo "Ese SO no esta en la lista."
+				sleep 1
+				clear
+			fi
+		done      
+			
+		megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
+		echo -n "¿Cuanto espacio de disco quieres añadirle a tu máquina virtual? " && echo -n "(1024 a " && echo "$megas (En megas))"
+		read disco
+		if [ $disco -lt $megas -a $disco -ge 1024 ];
+		then
+			echo "Se le pondran $disco M de Almacenamiento."
+		else
+			while true;
+			do
+				echo "¿Usted planea destruir su ordenador?"
+				echo -n "¿Cuanto espacio de disco quieres añadirle a tu máquina virtual? " && echo -n "(1024 a " && echo "$megas (En megas))"
+                		read disco
+				if [ $disco -lt $megas -a $disco -ge 1024 ];
+				then
+					echo "Se le pondran $disco M de Almacenamiento."
+					break
+				fi
+			done
+		fi
 		VBoxManage modifyvm $NombreVM --cpus $cpu
+		VBoxManage modifyvm $NombreVM --vram 25
+		VBoxManage modifyvm $NombreVM --usbohci on
+		VBoxManage modifyvm $NombreVM --usbehci on
 		VBoxManage modifyvm $NombreVM --memory $ram
-		VBoxManage modifyvm $NombreVM --ostype $so
-
+		VBoxManage modifyvm $NombreVM --nic1 nat
+		VBoxManage createhd disk --filename $NombreVM --size $disco
+		VBoxManage storagectl $NombreVM --name SATA --add sata
+		VBoxManage storageattach $NombreVM --type hdd --storagectl SATA --port 0 --medium $NombreVM.vdi
+		VBoxManage modifyhd *.vdi --move ~/VirtualBox\ VMs/$NombreVM
 	else
 		clear
 		echo "Esa maquina ya esta creada."
+		sleep 1
 	fi
+}
+
+eliminar_vm()
+{
+	clear
+	while true;
+	do
+		#Esto lista las maquinas virtuales que tenemos en nuestro ordenador y lo redirigimos a un fichero de texto
+		VBoxManage list -s vms | cut -d '"' -f 2 > maquinas.txt
+		typeset -a Menu
+		exec 3< ./maquinas.txt
+		Contador=1
+		while read linea <&3; do
+			echo "$Contador- $linea"
+			Menu[$Contador]="$linea"		# Añadimos elementos al array
+			Contador=$((Contador+1))	
+		done
+		echo "0- Salir"
+		echo ""
+		echo "Seleccione una Maquina Virtual."
+		read opcion
+		if [ $opcion -eq 0 ];
+		then
+			break
+		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
+		then
+			echo "¿Estas seguro de que quieres eliminar la máquina ${Menu[$opcion]}? [S para eliminar]"
+			read confirmacion
+			if [ $confirmacion = "s" -o $confirmacion = "S" ];
+			then
+				VBoxManage unregistervm ${Menu[$opcion]} --delete
+				break
+			else
+				echo "No se eliminará la maquina."
+				sleep 1
+				clear
+			fi
+		else
+			echo "Esa máquina no esta en la lista."
+			sleep 1
+			clear
+		fi
+	done
+}
+
+estadisticas_vm()
+{
+	clear
+	while true;
+	do
+		VBoxManage list -s vms | cut -d '"' -f 2 > maquinas.txt
+		typeset -a Menu
+		exec 3< ./maquinas.txt
+		Contador=1
+		while read linea <&3; do
+			echo "$Contador- $linea"
+			Menu[$Contador]="$linea"		# Añadimos elementos al array
+			Contador=$((Contador+1))	
+		done
+		echo "0- Salir"
+		echo ""
+		echo "Seleccione una Maquina Virtual."
+		read opcion
+		if [ $opcion -eq 0 ];
+		then
+			break
+		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
+		then
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Name:
+			VBoxManage showvminfo ${Menu[$opcion]} | grep  --color=never Guest\ OS
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never UUID: 
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Number\ of\ CPUs
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never VRAM
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Memory\ size
+			VBoxManage showvminfo ${Menu[$opcion]} | egrep NIC\ 1: | cut -d "," -f 2
+			echo "¿Quieres salir? [0 para salir]" 
+			read salir
+			if [ $salir -eq 0 ];
+			then
+				break
+			else
+				echo "Seguiremos mostrando estadisticas."
+				sleep 1
+				clear
+			fi
+		else
+			echo "Esa máquina no esta en la lista."
+			sleep 1
+			clear
+		fi
+	done
+}
+modificar_vm()
+{
+	clear
+	while true;
+	do
+		#Esto lista las maquinas virtuales que tenemos en nuestro ordenador y lo redirigimos a un fichero de texto
+		VBoxManage list -s vms | cut -d '"' -f 2 > maquinas.txt
+		typeset -a Menu
+		exec 3< ./maquinas.txt
+		Contador=1
+		while read linea <&3; do
+			echo "$Contador- $linea"
+			Menu[$Contador]="$linea"		# Añadimos elementos al array
+			Contador=$((Contador+1))	
+		done
+		echo "0- Salir"
+		echo ""
+		echo "Seleccione una Maquina Virtual."
+		read opcion
+		if [ $opcion -eq 0 ];
+		then
+			break
+		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
+		then
+			maquina=${Menu[$opcion]}
+			echo "Maquina escogida."
+			sleep 1
+			break
+		else
+			echo "Esa máquina no esta en la lista."
+			sleep 1
+			clear
+		fi
+	done
+	while true;
+	do
+		clear
+		echo "Opcion 1-Configurar Red."
+		echo "Opcion 2-Modificar disco duro."
+		echo "Opcion 3-Modificar RAM."
+		echo "Opcion 4-Modificar CPUs."
+		echo "Opcion 5-Cambiar Nombre."
+		echo "Opcion 0-Salir."
+		read pedido
+		if [ $pedido -eq 1 ];
+		then
+			while true;
+			do
+				clear
+				echo "Opcion 1-Activar modo NAT."
+				echo "Opcion 2-Activar modo Bridge."
+				echo "Opcion 0-Salir."
+				read red
+				if [ $red -eq 1 ];
+				then
+					VBoxManage modifyvm $maquina --nic1 nat
+				elif [ $red -eq 2 ];
+				then
+					ip a | egrep -o ' [a-zAZ0-9]{1,}: ' | cut -d ":" -f 1 | cut -d " " -f 2 > conexiones.txt
+					typeset -a Menu
+					exec 4< ./conexiones.txt
+					Contadores=1
+					while read lineas <&4; do
+						echo "$Contadores- $lineas"
+						MenuP[$Contadores]="$lineas"		# Añadimos elementos al array
+						Contadores=$((Contadores+1))	
+					done
+					echo "0- Salir"
+					echo ""
+					echo "Seleccione una Interfaz de Red."
+					read puente
+					if [ $puente -eq 0 ];
+					then
+						break
+					elif [ $puente -ge 1 -a $puente -le ${#MenuP[*]} ];
+					then
+						puentes=${MenuP[$puente]}
+						VBoxManage modifyvm $maquina --nic1 bridged
+						VBoxManage modifyvm $maquina --bridgeadapter1 $puentes
+						echo "Puente Realizado."
+						sleep 1
+						break
+					else
+						echo "Esa interfaz no esta en la lista."
+						sleep 1
+						clear
+					fi
+					
+				elif [ $red -eq 0 ];
+				then
+					break
+				fi
+			done
+		elif [ $pedido -eq 2 ];
+		then
+			while true;
+			do
+				echo "Opcion 1-Aumentar Espacio de Disco."
+				echo "Opcion 2-Añadir Nuevo Disco."
+				echo "Opcion 3-Eliminar Disco."
+				echo "Opcion 0-Salir."
+				read disco
+				if [ $disco -eq 1 ];
+				then
+					cuenta=`ls ~/VirtualBox\ VMs/$maquina/*.vdi | wc -l`
+					if [ $cuenta -gt 0 ];
+					then
+						echo "Usted posee $cuenta disco/s."
+						ls ~/VirtualBox\ VMs/$maquina/*.vdi | egrep -o '[a-zA-Z0-9]{1,}.vdi' > discos.txt
+						exec 5< discos.txt
+						typeset -a MenuD
+						ContadorD=1
+						while read lineasD <&5; do
+							echo "$ContadorD- $lineasD"
+							MenuD[$ContadorD]="$lineasD"		# Añadimos elementos al array
+							ContadorD=$((ContadorD+1))	
+						done
+						echo "0- Salir"
+						echo ""
+						echo "Seleccione un Disco."
+						read disco
+						if [ $disco -eq 0 ];
+						then
+							break
+						elif [ $disco -ge 1 -a $disco -le ${#MenuD[*]} ];
+						then
+							discoduro=${MenuD[$disco]}
+							megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
+							echo -n "Escriba el nuevo tamaño de disco" && echo -n "(1024 a " && echo "$megas (En megas))"
+							read tamanio
+							echo $discoduro
+							VBoxManage modifyhd ~/VirtualBox\ VMs/$maquina/$discoduro --resize $tamanio 
+						else
+							echo "Ese disco no esta en la lista."
+							sleep 1
+							clear
+						fi
+					else
+						clear
+						echo "Usted no posee ningun disco."
+						sleep 1
+						clear
+					fi
+				elif [ $disco -eq 2 ];
+				then
+					megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
+					echo -n "¿Cual es el tamaño del nuevo disco?" && echo -n "(1024 a " && echo "$megas (En megas))"
+					discos=`ls ~/VirtualBox\ VMs/$maquina/*.vdi | wc -l`
+					puerto=$(($discos+1))
+					read tamanio
+					if [ $tamanio -lt $megas -a $tamanio -ge 1024 ];
+					then
+						echo "Se le pondran $tamanio M de Almacenamiento."
+						VBoxManage createhd disk --filename $maquina$puerto --size $tamanio
+						VBoxManage storageattach $maquina --type hdd --storagectl SATA --port $puerto --medium $maquina$puerto.vdi
+						VBoxManage modifyhd *.vdi --move ~/VirtualBox\ VMs/$maquina
+					else
+						while true;
+						do
+						echo "¿Usted planea destruir su ordenador?"
+						echo -n "¿Cuanto espacio de disco quieres añadirle a tu máquina virtual? " && echo -n "(1024 a " && echo "$megas (En megas))"
+                				read tamanio
+						if [ $tamanio -lt $megas -a $tamanio -ge 1024 ];
+						then
+							echo "Se le pondran $tamanio M de Almacenamiento."
+							VBoxManage createhd disk --filename $maquina$puerto --size $tamanio
+							VBoxManage storageattach $maquina --type hdd --storagectl SATA --port $puerto --medium $maquina$puerto.vdi
+							VBoxManage modifyhd *.vdi --move ~/VirtualBox\ VMs/$maquina
+							break
+						fi
+						done
+					fi
+				elif [ $disco -eq 3 ];
+				then
+					cuenta=`ls ~/VirtualBox\ VMs/$maquina/*.vdi | wc -l`
+					if [ $cuenta -gt 0 ];
+					then
+						echo "Usted posee $cuenta disco/s."
+						ls ~/VirtualBox\ VMs/$maquina/*.vdi | egrep -o '[a-zA-Z0-9]{1,}.vdi' > discos.txt
+						exec 5< discos.txt
+						typeset -a MenuD
+						ContadorD=1
+						while read lineasD <&5; do
+							echo "$ContadorD- $lineasD"
+							MenuD[$ContadorD]="$lineasD"		# Añadimos elementos al array
+							ContadorD=$((ContadorD+1))	
+						done
+						echo "0- Salir"
+						echo ""
+						echo "Seleccione un Disco."
+						read disco
+						if [ $disco -eq 0 ];
+						then
+							break
+						elif [ $disco -ge 1 -a $disco -le ${#MenuD[*]} ];
+						then
+							discoduro=${MenuD[$disco]}
+							echo $discoduro
+						else
+							echo "Ese disco no esta en la lista."
+							sleep 1
+							clear
+						fi
+					else
+						clear
+						echo "Usted no posee ningun disco."
+						sleep 1
+						clear
+					fi
+				elif [ $disco -eq 0 ];
+				then
+					break
+				else
+					echo "Esa no es una opcion valida."
+					sleep 1
+					clear
+				fi
+			done
+		elif [ $pedido -eq 3 ];
+		then
+			echo "Jaja."
+		elif [ $pedido -eq 4 ];
+		then
+			echo "LOL."
+		elif [ $pedido -eq 5 ];
+		then
+			echo "JEJE."
+		elif [ $pedido -eq 6 ];
+		then
+			echo "JIJI."
+		elif [ $pedido -eq 0 ];
+		then
+			break
+		fi
+	done
+}
+modificar_fichero()
+{
+	exec 4< maquinas.txt
+	rm ficheronuevo.txt
+	while read linea<&4; do
+		echo "${linea/\ /\\ }" >> ficheronuevo.txt
+	done
 }
