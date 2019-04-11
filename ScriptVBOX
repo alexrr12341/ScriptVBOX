@@ -36,25 +36,68 @@ do
 		fi
 	elif [ $opcion -eq 2 ];
 	then
-		iniciar_vm
+		if [ $USER = "root" ];
+		then
+			
+			echo "Está intentando iniciar una máquina virtual en modo root."
+			sleep 1
+		else
+			iniciar_vm
+		fi
 	elif [ $opcion -eq 3 ];
 	then
-		crear_vm
+		if [ $USER = "root" ];
+		then
+			echo "Está intentando crear una máquina virtual en modo root."
+			sleep 1
+		else
+			crear_vm
+		fi
 	elif [ $opcion -eq 4 ];
 	then
-		estadisticas_vm
+		if [ $USER = "root" ];
+		then
+			echo "Está intentando ver las estadisticas de una máquina virtual en modo root."
+			sleep 1
+		else
+			estadisticas_vm
+		fi
 	elif [ $opcion -eq 5 ];
 	then
-		controlar_vm
+		if [ $USER = "root" ];
+		then
+			echo "Está intentando controlar una máquina virtual en modo root."
+			sleep 1
+		else
+			controlar_vm
+		fi
 	elif [ $opcion -eq 6 ];
 	then
-		modificar_vm
+		if [ $USER = "root" ];
+		then
+			echo "Está intentando modificar una máquina virtual en modo root."
+			sleep 1
+		else
+			modificar_vm
+		fi
 	elif [ $opcion -eq 7 ];
 	then
-		implantar_iso
+		if [ $USER = "root" ];
+		then
+			echo "Está intentando implantar una ISO en modo root."
+			sleep 1
+		else
+			implantar_iso
+		fi
 	elif [ $opcion -eq 8 ];
 	then
-		eliminar_vm
+		if [ $USER = "root" ];
+		then
+			echo "Está intentando eliminar una máquina virtual en modo root."
+			sleep 1
+		else
+			eliminar_vm
+		fi
 	elif [ $opcion -eq 0 ];
 	then
 		break
