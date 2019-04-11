@@ -1,0 +1,70 @@
+#!/bin/bash
+controlar_vm()
+{
+	clear
+	while true;
+	do
+		#Esto lista las maquinas virtuales que tenemos encendidas.
+		VBoxManage list -s runningvms | cut -d '"' -f 2 > maquinasE.txt
+		typeset -a Menu
+		exec 3< ./maquinasE.txt
+		Contador=1
+		while read linea <&3; do
+			echo "$Contador- $linea"
+			Menu[$Contador]="$linea"		# Añadimos elementos al array
+			Contador=$((Contador+1))	
+		done
+		echo "0- Salir"
+		echo ""
+		echo "Seleccione una Maquina Virtual."
+		read opcion
+		if [ $opcion -eq 0 ];
+		then
+			break
+		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
+		then
+			maquina=${Menu[$opcion]}
+			echo "Maquina escogida."
+			sleep 1
+			break
+		else
+			echo "Esa máquina no esta en la lista."
+			sleep 1
+			clear
+		fi
+	done
+	clear
+	while true;
+	do
+		echo "Opcion 1-Reanudar"
+		echo "Opcion 2-Pausar"
+		echo "Opcion 3-Apagar"
+		echo "Opcion 4-Guardar Estado"
+		echo "Opcion 5-Reiniciar"
+		echo "Opcion 6-Botonazo"
+		echo "Opcion 0-Salir"
+		read Opcion2
+		if [ $Opcion2 -eq 1 ];
+		then
+			VBoxManage controlvm $maquina resume
+		elif [ $Opcion2 -eq 2 ];
+		then
+			VBoxManage controlvm $maquina pause
+		elif [ $Opcion2 -eq 3 ];
+		then
+			VBoxManage controlvm $maquina poweroff
+		elif [ $Opcion2 -eq 4 ];
+		then
+			VBoxManage controlvm $maquina savestate
+		elif [ $Opcion2 -eq 5 ];
+		then
+			VBoxManage controlvm $maquina reset
+		elif [ $Opcion2 -eq 6 ];
+		then
+			VBoxManage controlvm $maquina acpipowerbutton
+		elif [ $Opcion2 -eq 0 ];
+		then
+			break
+		fi
+	done
+}

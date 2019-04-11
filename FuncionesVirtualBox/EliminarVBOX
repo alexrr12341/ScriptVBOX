@@ -1,0 +1,45 @@
+#!/bin/bash
+eliminar_vm()
+{
+	clear
+	while true;
+	do
+		#Esto lista las maquinas virtuales que tenemos en nuestro ordenador y lo redirigimos a un fichero de texto
+		VBoxManage list -s vms | cut -d '"' -f 2 > maquinas.txt
+		typeset -a Menu
+		exec 3< ./maquinas.txt
+		Contador=1
+		while read linea <&3; do
+			echo "$Contador- $linea"
+			Menu[$Contador]="$linea"		# Añadimos elementos al array
+			Contador=$((Contador+1))	
+		done
+		echo "0- Salir"
+		echo ""
+		echo "Seleccione una Maquina Virtual."
+		read opcion
+		if [ $opcion -eq 0 ];
+		then
+			break
+		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
+		then
+			echo "¿Estas seguro de que quieres eliminar la máquina ${Menu[$opcion]}? [S para eliminar]"
+			read confirmacion
+			if [ $confirmacion = "s" -o $confirmacion = "S" ];
+			then
+				VBoxManage unregistervm ${Menu[$opcion]} --delete
+				rm -r ~/VirtualBox\ VMs/${Menu[$opcion]}
+				break
+			else
+				echo "No se eliminará la maquina."
+				sleep 1
+				clear
+			fi
+		else
+			echo "Esa máquina no esta en la lista."
+			sleep 1
+			clear
+		fi
+	done
+}
+

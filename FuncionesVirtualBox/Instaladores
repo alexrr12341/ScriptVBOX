@@ -1,0 +1,91 @@
+#!/bin/bash
+#Este comando instalara feh.
+instalar_feh()
+{
+	instaladorfeh=`dpkg -s feh | egrep -o installed`
+	if [ $instaladorfeh = "installed" ];
+	then
+		clear
+		echo "feh esta instalado."
+	else
+		clear
+		echo "¿Desea instalar el paquete feh?(Mostrador de fotos) [S para instalar] "
+		read opcion
+		if [ $opcion = 'S' -o $opcion = 's' ];
+		then
+			if [ $USER = "root" ];
+			then
+				apt-get install feh
+				clear
+			else
+				"No esta como root."
+			fi
+		else
+			echo "No se instalará el programa."
+		fi
+	fi
+}
+
+#Este comando instalara virtualbox.
+instalar_vbox()
+{
+	clear
+        instalarvbox=`dpkg -s virtualbox-6.0 | grep -o installed`
+        if [ $instalarvbox = "installed" ];
+	then
+		clear
+                echo "VirtualBox esta instalado."
+	else
+		clear
+		echo "VirtualBox no esta instalado"
+		echo "¿Desea instalar VirtualBox 6.0 junto a sus repositorios? [S para continuar] "
+		read opcion
+		if [ $opcion = "S" -o $opcion = 's' ];
+		then
+			if [ $USER = 'root' ];
+			then
+				read -p "¿Cual es su distribucion de linux? [stretch,jessie...] " distribucion
+				echo "deb https://download.virtualbox.org/virtualbox/debian $distribucion contrib" >> /etc/apt/sources.list
+				wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -
+				wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | apt-key add -
+				apt-get update
+				clear
+				echo "Instalando VirtualBox... Puede tardar varios minutos...."
+				sleep 3
+				apt-get install virtualbox-6.0
+			else
+				"No esta como root."
+			fi
+		else
+			echo "No se instalará el programa."
+		fi
+	fi
+}
+
+instalar_dialog()
+{
+	clear
+	dialog=`dpkg -s dialog | grep -o installed`
+	if [ $dialog = "installed" ];
+	then
+		clear
+		echo "Dialog esta instalado."
+	else
+		clear
+		echo "Dialog no esta instalado."
+		echo "¿Desea instalar Dialog? [S para continuar]"
+		read opcion
+		if [ $opcion = "S" -o $opcion = 's' ];
+		then
+			if [ $USER = 'root' ];
+			then
+				apt-get install dialog
+			else
+				"No esta como root."
+			fi
+		else
+			echo "No se instalará el programa."
+		fi
+	fi
+		
+}

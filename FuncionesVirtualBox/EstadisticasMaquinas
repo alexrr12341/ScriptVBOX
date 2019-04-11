@@ -1,0 +1,48 @@
+#!/bin/bash
+estadisticas_vm()
+{
+	clear
+	while true;
+	do
+		VBoxManage list -s vms | cut -d '"' -f 2 > maquinas.txt
+		typeset -a Menu
+		exec 3< ./maquinas.txt
+		Contador=1
+		while read linea <&3; do
+			echo "$Contador- $linea"
+			Menu[$Contador]="$linea"		# Añadimos elementos al array
+			Contador=$((Contador+1))	
+		done
+		echo "0- Salir"
+		echo ""
+		echo "Seleccione una Maquina Virtual."
+		read opcion
+		if [ $opcion -eq 0 ];
+		then
+			break
+		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
+		then
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Name:
+			VBoxManage showvminfo ${Menu[$opcion]} | grep  --color=never Guest\ OS
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never UUID: 
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Number\ of\ CPUs
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never VRAM
+			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Memory\ size
+			VBoxManage showvminfo ${Menu[$opcion]} | egrep NIC\ 1: | cut -d "," -f 2
+			echo "¿Quieres salir? [0 para salir]" 
+			read salir
+			if [ $salir -eq 0 ];
+			then
+				break
+			else
+				echo "Seguiremos mostrando estadisticas."
+				sleep 1
+				clear
+			fi
+		else
+			echo "Esa máquina no esta en la lista."
+			sleep 1
+			clear
+		fi
+	done
+}

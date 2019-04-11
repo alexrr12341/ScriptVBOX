@@ -1,8 +1,14 @@
 #!/bin/bash 
-. ./FuncionesVBOX
+. ./FuncionesVirtualBox/ControlarMaquinasVBOX
+. ./FuncionesVirtualBox/CreacionesMaquinasVBOX
+. ./FuncionesVirtualBox/EliminarVBOX
+. ./FuncionesVirtualBox/EstadisticasMaquinas
+. ./FuncionesVirtualBox/ImplatarISOVBOX
+. ./FuncionesVirtualBox/IniciarMaquinaVBOX
+. ./FuncionesVirtualBox/Instaladores
+. ./FuncionesVirtualBox/ModificarMaquinasVBOX
 while true;
 do
-	. ./FuncionesVBOX
 	clear
 	echo "Opcion 1-Instalar Programas.(root)"
 	echo "Opcion 2-Iniciar MV."

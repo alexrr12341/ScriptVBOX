@@ -1,0 +1,169 @@
+#!/bin/bash
+implantar_iso()
+{
+	clear
+	while true;
+	do
+		#Esto lista las maquinas virtuales que tenemos encendidas.
+		VBoxManage list -s vms | cut -d '"' -f 2 > maquinas.txt
+		typeset -a Menu
+		exec 3< ./maquinas.txt
+		Contador=1
+		while read linea <&3; do
+			echo "$Contador- $linea"
+			Menu[$Contador]="$linea"		# Añadimos elementos al array
+			Contador=$((Contador+1))	
+		done
+		echo "0- Salir"
+		echo ""
+		echo "Seleccione una Maquina Virtual."
+		read opcion
+		if [ $opcion -eq 0 ];
+		then
+			break
+		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
+		then
+			maquina=${Menu[$opcion]}
+			echo "Maquina escogida."
+			sleep 1
+			break
+		else
+			echo "Esa máquina no esta en la lista."
+			sleep 1
+			clear
+		fi
+	done
+	while true;
+	do
+		cuenta=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
+		if [ $cuenta -gt 0 ];
+		then
+			echo "Usted posee $cuenta disco/s."
+			VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' > discos.txt
+			exec 5< discos.txt
+			typeset -a MenuD
+			ContadorD=1
+			while read lineasD <&5; do
+				echo "$ContadorD- $lineasD"
+				MenuD[$ContadorD]="$lineasD"		# Añadimos elementos al array
+				ContadorD=$((ContadorD+1))	
+			done
+			echo "0- Salir"
+			echo ""
+			echo "Seleccione un disco donde implantar la ISO."
+			read disco
+			if [ $disco -eq 0 ];
+			then
+				break
+			elif [ $disco -ge 1 -a $disco -le ${#MenuD[*]} ];
+			then
+				discoduro=${MenuD[$disco]}
+				puerto=`VBoxManage showvminfo $maquina | grep 'SATA.*' | grep $discoduro | cut -d "(" -f 2 | cut -d "," -f 1`
+				echo "Disco seleccionado: $discoduro"
+				echo "Puerto del disco: $puerto"
+				sleep 2
+				break
+			else
+				echo "Ese disco no esta en la lista."
+				sleep 1
+				clear
+			fi
+		else
+			clear
+			echo "Usted no posee ningun disco."
+			sleep 1
+			clear
+			break
+		fi
+	done
+	while true;
+	do
+		if [ $disco -ne 0 ];
+		then
+			clear
+			echo "Busqueda de ISO"
+			echo "---------------"
+			echo "1- Modo Dialog"
+			echo "2- Modo Texto"
+			echo "0- Salir"
+			echo "Seleccione un modo de Implantación de la ISO."
+			read ISO
+			if [ $ISO -eq 1 ];
+			then
+				dialog --fselect /home/$USER 0 0 2> ruta.txt
+				clear
+				echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
+				read respuesta
+				if [ $respuesta = 'S' -o $respuesta = 's' ];
+				then
+					ruta=`cat ruta.txt`
+					busqueda=`ls $ruta | grep -o '.iso'`
+					if [ $busqueda = '.iso' ];
+					then
+						break
+					else
+						echo "Eso no es una iso."
+					fi
+				fi
+			elif [ $ISO -eq 2 ];
+			then
+				echo "Escriba la ruta de su ISO."
+				read ruta
+				clear
+				echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
+				if [ $respuesta = 'S' -o $respuesta = 's' ];
+				then
+					ruta=`cat ruta.txt`
+					busqueda=`ls $ruta | grep -o '.iso'`
+					if [ $busqueda = '.iso' ];
+					then
+						break
+					else
+						echo "Eso no es una iso."
+					fi
+
+				fi
+			elif [ $ISO -eq 0 ];
+			then
+				break
+			fi
+		else
+			break
+		fi
+	done
+	megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
+	echo -n "Seleccione el tamaño del disco" && echo -n "(1024 a " && echo "$megas (En megas))"
+	read tamanio
+	if [ $tamanio -lt $megas -a $tamanio -ge 1024 ];
+	then
+		echo "Se le pondran $tamanio M de Almacenamiento."
+		if [ $cuenta -eq 0 ];
+		then
+			VBoxManage convertfromraw $ruta $maquina.vdi --format vdi
+			VBoxManage modifyhd ./$discoduro --resize $tamanio
+			VBoxManage storagectl $maquina --name SATA --add sata
+			VBoxManage storageattach $maquina --type hdd --storagectl SATA --port 0 --medium $discoduro
+			VBoxManage modifyhd $discoduro --move ~/VirtualBox\ VMs/$maquina
+		else
+			rm ~/VirtualBox\ VMs/$maquina/$discoduro
+			VBoxManage convertfromraw $ruta $discoduro --format vdi
+			VBoxManage modifyhd ./$discoduro --resize $tamanio
+			VBoxManage storageattach $maquina --storagectl SATA --port $puerto --medium none
+			VBoxManage storageattach $maquina --type hdd --storagectl SATA --port $puerto --medium $discoduro
+			VBoxManage modifyhd $discoduro --move ~/VirtualBox\ VMs/$maquina
+		fi
+	else
+		while true;
+		do
+		echo "¿Usted planea destruir su ordenador?"
+			echo -n "Seleccione el tamaño del disco" && echo -n "(1024 a " && echo "$megas (En megas))"
+                	read disco
+			if [ $disco -lt $megas -a $disco -ge 1024 ];
+			then
+				echo "Se le pondran $tamanio M de Almacenamiento."
+				break
+			fi
+		done
+	fi	
+		
+}

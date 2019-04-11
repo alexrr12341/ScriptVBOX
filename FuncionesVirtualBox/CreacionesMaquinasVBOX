@@ -1,0 +1,190 @@
+#!/bin/bash
+crear_vm()
+{
+	clear
+	read -p "¿Como quieres nombrar a dicha maquina virtual? " NombreVM
+	parametro=$(VBoxManage list -s vms | cut -d '"' -f 2 | egrep -co $NombreVM$)
+	if [[ $parametro -eq 0 ]];
+	then
+		VBoxManage createvm --register --name $NombreVM
+		clear
+		echo "Maquina creada y registrada."
+		echo -n "¿Cuantas CPUs quieres poner a tu MV? " &&  echo -n "(1 a" && echo " `nproc --all`)"
+		read cpu
+		#Este comando busca las CPUs que tiene el pc, tanto logicas como reales.
+		Cpus=`nproc --all`
+		if [ $cpu -lt $Cpus -a $cpu -ge 1 ];
+		then
+			echo "Se le pondran $cpu CPUs a su MV."
+		else
+			while true;
+			do
+				echo "¿Usted planea destruir su ordenador?"
+				echo -n "¿Cuantas CPUs quieres poner a tu MV? " &&  echo -n "(1 a" && echo " `nproc --all`)"
+				read cpu
+				if [ $cpu -lt $Cpus -a $cpu -ge 1 ];
+				then
+					echo "Se le pondran $cpu CPUs a su MV."
+					break
+				fi
+			done
+		fi
+		#Este comando busca la memoria Maxima que tiene nuestro ordenador en megas
+		memoria=$(free -m | grep Mem | awk {'print $2'})
+		echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(512 a " && echo "$memoria (En megas))"
+		read ram
+		if [ $ram -lt $memoria -a $ram -ge 512 ];
+		then
+			echo "Se le pondran $ram M a su MV."
+		else
+			while true;
+			do
+				echo "¿Usted planea destruir su ordenador?"
+				echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(512 a " && echo "$memoria (En megas))"
+                		read ram
+				if [ $ram -lt $memoria -a $ram -ge 512 ];
+				then
+					echo "Se le pondran $ram M a su MV."
+					break
+				fi
+			done
+
+		fi
+		#Esto te preguntará sobre el sistema operativo, te dara una lista
+		while true;
+		do
+			typeset -a MenuSO
+			exec 4< ./SistemasOperativos
+			Contador=1
+			while read linea <&4; do
+				echo "$Contador- $linea"
+				MenuSO[$Contador]="$linea"		# Añadimos elementos al array
+				Contador=$((Contador+1))	
+			done
+			echo "0- No especificar"
+			echo ""
+			echo "Seleccione un Sistema Operativo."
+			read so
+			if [ $so -eq 0 ];
+			then
+				break
+			elif [ $so -ge 1 -a $so -le ${#MenuSO[*]} ];
+			then
+				VBoxManage modifyvm $NombreVM --ostype ${MenuSO[$so]}
+				break
+			else
+				echo "Ese SO no esta en la lista."
+				sleep 1
+				clear
+			fi
+		done      
+			
+		megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
+		echo -n "¿Cuanto espacio de disco quieres añadirle a tu máquina virtual? " && echo -n "(1024 a " && echo "$megas (En megas))"
+		read disco
+		if [ $disco -lt $megas -a $disco -ge 1024 ];
+		then
+			echo "Se le pondran $disco M de Almacenamiento."
+		else
+			while true;
+			do
+				echo "¿Usted planea destruir su ordenador?"
+				echo -n "¿Cuanto espacio de disco quieres añadirle a tu máquina virtual? " && echo -n "(1024 a " && echo "$megas (En megas))"
+                		read disco
+				if [ $disco -lt $megas -a $disco -ge 1024 ];
+				then
+					echo "Se le pondran $disco M de Almacenamiento."
+					break
+				fi
+			done
+		fi
+		while true;
+		do
+			echo "¿Quieres implantar una ISO al disco? [S para confirmar]"
+			read implant
+			if [ $implant = 'S' -o $implant = 's' ];
+			then
+				clear
+				echo "Busqueda de ISO"
+				echo "---------------"
+				echo "1- Modo Dialog"
+				echo "2- Modo Texto"
+				echo "0- Salir"
+				echo "Seleccione un modo de Implantación de la ISO."
+				read ISO
+				if [ $ISO -eq 1 ];
+				then
+					dialog --fselect /home/$USER 0 0 2> ruta.txt
+					clear
+					echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
+					read respuesta
+					if [ $respuesta = 'S' -o $respuesta = 's' ];
+					then
+						ruta=`cat ruta.txt`
+						busqueda=`ls $ruta | grep -o '.iso'`
+						if [ $busqueda = '.iso' ];
+						then
+							VBoxManage convertfromraw $ruta $NombreVM.vdi --format vdi
+							VBoxManage modifyhd ./$NombreVM.vdi --resize $disco
+							VBoxManage storagectl $NombreVM --name SATA --add sata
+							VBoxManage storageattach $NombreVM --type hdd --storagectl SATA --port 0 --medium $NombreVM.vdi
+							VBoxManage modifyhd $NombreVM.vdi --move ~/VirtualBox\ VMs/$NombreVM
+							break
+						else
+							echo "Eso no es una iso."
+						fi
+					fi
+				elif [ $ISO -eq 2 ];
+				then
+					echo "Escriba la ruta de su ISO."
+					read ruta
+					clear
+					echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
+					if [ $respuesta = 'S' -o $respuesta = 's' ];
+					then
+						ruta=`cat ruta.txt`
+						busqueda=`ls $ruta | grep -o '.iso'`
+						if [ $busqueda = '.iso' ];
+						then
+							VBoxManage convertfromraw $ruta $NombreVM.vdi --format vdi
+							VBoxManage modifyhd ./$NombreVM.vdi --resize $disco
+							VBoxManage storagectl $NombreVM --name SATA --add sata
+							VBoxManage storageattach $NombreVM --type hdd --storagectl SATA --port 0 --medium $NombreVM.vdi
+							VBoxManage modifyhd $NombreVM.vdi --move ~/VirtualBox\ VMs/$NombreVM
+							break
+						else
+							echo "Eso no es una iso."
+							sleep 1
+						fi
+
+					fi
+				elif [ $ISO -eq 0 ];
+				then
+					break
+				fi
+			else
+				echo "¿Estas seguro de querer dejar el disco vacio? [S para confirmar]"
+				read confirmar
+				if [ $confirmar = 'S' -o $confirmar = 's' ];
+				then
+					VBoxManage createhd disk --filename $NombreVM --size $disco
+					VBoxManage storagectl $NombreVM --name SATA --add sata
+					VBoxManage storageattach $NombreVM --type hdd --storagectl SATA --port 0 --medium $NombreVM.vdi
+					VBoxManage modifyhd *.vdi --move ~/VirtualBox\ VMs/$NombreVM
+					break
+				fi
+			fi
+		done		
+		VBoxManage modifyvm $NombreVM --cpus $cpu
+		VBoxManage modifyvm $NombreVM --vram 25
+		VBoxManage modifyvm $NombreVM --usbohci on
+		VBoxManage modifyvm $NombreVM --usbehci on
+		VBoxManage modifyvm $NombreVM --memory $ram
+		VBoxManage modifyvm $NombreVM --nic1 nat
+	else
+		clear
+		echo "Esa maquina ya esta creada."
+		sleep 1
+	fi
+}
+
