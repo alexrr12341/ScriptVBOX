@@ -1,6 +1,7 @@
 #!/bin/bash
 eliminar_vm()
 {
+	echo -e "\e[37m"
 	clear
 	while true;
 	do

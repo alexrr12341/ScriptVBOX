@@ -10,15 +10,22 @@
 while true;
 do
 	clear
-	echo "Opcion 1-Instalar Programas.(root)"
-	echo "Opcion 2-Iniciar MV."
-	echo "Opcion 3-Crear MV."
-	echo "Opcion 4-Estadisticas MV."
-	echo "Opcion 5-Controlar MV.(Maquinas Activas)"
-	echo "Opcion 6-Modificar MV."
-	echo "Opcion 7-Implantar ISO."
-	echo "Opcion 8-Eliminar MV."
-	echo "Opcion 0-Salir."
+	echo -e "\e[0m"
+	echo -e "\e[34m"
+	figlet "VirtualBash"
+	echo -e "\e[0m"
+	echo -e "\e[42mEn este programa podremos usar VirtualBox a modo de comandos mediante VBoxManage\e[0m"
+	echo ""
+	echo "Seleccione una Opcion:"
+	echo -e "\e[36mOpcion 1-Instalar Programas.(root)\e[0m"
+	echo -e "\e[32mOpcion 2-Iniciar MV.\e[0m"
+	echo -e "\e[97mOpcion 3-Crear MV.\e[0m"
+	echo -e "\e[31mOpcion 4-Estadisticas MV.\e[0m"
+	echo -e "\e[35mOpcion 5-Controlar MV.(Maquinas Activas)\e[0m"
+	echo -e "\e[33mOpcion 6-Modificar MV.\e[0m"
+	echo -e "\e[96mOpcion 7-Implantar ISO.\e[0m"
+	echo -e "\e[37mOpcion 8-Eliminar MV.\e[0m"
+	echo -e "\e[91mOpcion 0-Salir.\e[0m"
 	read opcion
 	if [ $opcion -eq 1 ];
 	then
@@ -27,6 +34,7 @@ do
 			instalar_vbox
 			instalar_feh
 			instalar_dialog
+			instalar_figlet
 			clear
 			echo "Todos los programas estan instalados."
 			sleep 1

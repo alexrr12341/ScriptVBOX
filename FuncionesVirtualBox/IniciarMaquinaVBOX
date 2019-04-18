@@ -9,6 +9,7 @@ iniciar_vm()
 		typeset -a Menu
 		exec 3< ./maquinas.txt
 		Contador=1
+		echo -e "\e[32m"
 		while read linea <&3; do
 			echo "$Contador- $linea"
 			Menu[$Contador]="$linea"		# Añadimos elementos al array
@@ -20,9 +21,11 @@ iniciar_vm()
 		read opcion
 		if [ $opcion -eq 0 ];
 		then
+			echo -e "\e[0m"
 			break
 		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
 		then
+			echo -e "\e[0m"
 			VBoxManage startvm ${Menu[$opcion]}
 			break
 		else

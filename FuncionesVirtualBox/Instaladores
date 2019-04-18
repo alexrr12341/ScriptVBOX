@@ -15,6 +15,7 @@ instalar_feh()
 		then
 			if [ $USER = "root" ];
 			then
+				apt-get update
 				apt-get install feh
 				clear
 			else
@@ -79,7 +80,37 @@ instalar_dialog()
 		then
 			if [ $USER = 'root' ];
 			then
+				apt-get update
 				apt-get install dialog
+			else
+				"No esta como root."
+			fi
+		else
+			echo "No se instalará el programa."
+		fi
+	fi
+		
+}
+
+instalar_figlet()
+{
+	clear
+	dialog=`dpkg -s figlet | grep -o installed`
+	if [ $dialog = "installed" ];
+	then
+		clear
+		echo "Figlet esta instalado."
+	else
+		clear
+		echo "Figlet no esta instalado."
+		echo "¿Desea instalar Figlet? [S para continuar]"
+		read opcion
+		if [ $opcion = "S" -o $opcion = 's' ];
+		then
+			if [ $USER = 'root' ];
+			then
+				apt-get update
+				apt-get install figlet
 			else
 				"No esta como root."
 			fi

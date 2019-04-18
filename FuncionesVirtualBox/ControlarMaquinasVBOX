@@ -9,6 +9,7 @@ controlar_vm()
 		typeset -a Menu
 		exec 3< ./maquinasE.txt
 		Contador=1
+		echo -e "\e[35m"
 		while read linea <&3; do
 			echo "$Contador- $linea"
 			Menu[$Contador]="$linea"		# Añadimos elementos al array
@@ -36,34 +37,41 @@ controlar_vm()
 	clear
 	while true;
 	do
-		echo "Opcion 1-Reanudar"
-		echo "Opcion 2-Pausar"
-		echo "Opcion 3-Apagar"
-		echo "Opcion 4-Guardar Estado"
-		echo "Opcion 5-Reiniciar"
-		echo "Opcion 6-Botonazo"
-		echo "Opcion 0-Salir"
-		read Opcion2
-		if [ $Opcion2 -eq 1 ];
+		if [ $opcion -ne 0 ];
 		then
-			VBoxManage controlvm $maquina resume
-		elif [ $Opcion2 -eq 2 ];
-		then
-			VBoxManage controlvm $maquina pause
-		elif [ $Opcion2 -eq 3 ];
-		then
-			VBoxManage controlvm $maquina poweroff
-		elif [ $Opcion2 -eq 4 ];
-		then
-			VBoxManage controlvm $maquina savestate
-		elif [ $Opcion2 -eq 5 ];
-		then
-			VBoxManage controlvm $maquina reset
-		elif [ $Opcion2 -eq 6 ];
-		then
-			VBoxManage controlvm $maquina acpipowerbutton
-		elif [ $Opcion2 -eq 0 ];
-		then
+			echo "Opcion 1-Reanudar"
+			echo "Opcion 2-Pausar"
+			echo "Opcion 3-Apagar"
+			echo "Opcion 4-Guardar Estado"
+			echo "Opcion 5-Reiniciar"
+			echo "Opcion 6-Botonazo"
+			echo "Opcion 0-Salir"
+			read Opcion2
+			if [ $Opcion2 -eq 1 ];
+			then
+				VBoxManage controlvm $maquina resume
+			elif [ $Opcion2 -eq 2 ];
+			then
+				VBoxManage controlvm $maquina pause
+			elif [ $Opcion2 -eq 3 ];
+			then
+				VBoxManage controlvm $maquina poweroff
+			elif [ $Opcion2 -eq 4 ];
+			then
+				VBoxManage controlvm $maquina savestate
+			elif [ $Opcion2 -eq 5 ];
+			then
+				VBoxManage controlvm $maquina reset
+			elif [ $Opcion2 -eq 6 ];
+			then
+				VBoxManage controlvm $maquina acpipowerbutton
+			elif [ $Opcion2 -eq 0 ];
+			then
+				echo -e "\e[0m"
+				break
+			fi
+		else
+			echo -e "\e[0m"
 			break
 		fi
 	done

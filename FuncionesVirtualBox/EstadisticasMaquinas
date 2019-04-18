@@ -8,6 +8,7 @@ estadisticas_vm()
 		typeset -a Menu
 		exec 3< ./maquinas.txt
 		Contador=1
+		echo -e "\e[31m"
 		while read linea <&3; do
 			echo "$Contador- $linea"
 			Menu[$Contador]="$linea"		# Añadimos elementos al array
@@ -19,9 +20,11 @@ estadisticas_vm()
 		read opcion
 		if [ $opcion -eq 0 ];
 		then
+			echo -e "\e[0m"
 			break
 		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
 		then
+			echo -e "\e[0m"
 			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Name:
 			VBoxManage showvminfo ${Menu[$opcion]} | grep  --color=never Guest\ OS
 			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never UUID: 
@@ -29,10 +32,12 @@ estadisticas_vm()
 			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never VRAM
 			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Memory\ size
 			VBoxManage showvminfo ${Menu[$opcion]} | egrep NIC\ 1: | cut -d "," -f 2
+			echo -e "\e[31m"
 			echo "¿Quieres salir? [0 para salir]" 
 			read salir
 			if [ $salir -eq 0 ];
 			then
+				echo -e "\e[0m"
 				break
 			else
 				echo "Seguiremos mostrando estadisticas."

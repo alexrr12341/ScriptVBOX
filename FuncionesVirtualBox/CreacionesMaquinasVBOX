@@ -124,11 +124,34 @@ crear_vm()
 						busqueda=`ls $ruta | grep -o '.iso'`
 						if [ $busqueda = '.iso' ];
 						then
-							VBoxManage convertfromraw $ruta $NombreVM.vdi --format vdi
-							VBoxManage modifyhd ./$NombreVM.vdi --resize $disco
-							VBoxManage storagectl $NombreVM --name SATA --add sata
-							VBoxManage storageattach $NombreVM --type hdd --storagectl SATA --port 0 --medium $NombreVM.vdi
-							VBoxManage modifyhd $NombreVM.vdi --move ~/VirtualBox\ VMs/$NombreVM
+							while true;
+							do
+								clear
+								echo "¿Que tipo de controlador quieres?"
+								echo "Opcion 1- SATA"
+								echo "Opcion 2- IDE"
+								read controlador
+								if [ $controlador -eq 1 ];
+								then
+									VBoxManage createhd disk --filename $NombreVM --size $disco
+									VBoxManage storagectl $NombreVM --name SATA --add sata
+									VBoxManage storageattach $NombreVM --type hdd --storagectl SATA --device 0 --port 0 --medium $NombreVM.vdi
+									VBoxManage modifyhd $NombreVM.vdi --move ~/VirtualBox\ VMs/$NombreVM
+									VBoxManage storageattach $NombreVM --type dvddrive --storagectl SATA --device 0 --port 1 --medium $ruta
+									break
+								elif [ $controlador -eq 2 ];
+								then
+									VBoxManage createhd disk --filename $NombreVM --size $disco
+									VBoxManage storagectl $NombreVM --name IDE --add ide
+									VBoxManage storageattach $NombreVM --type hdd --storagectl IDE --device 0 --port 0 --medium $NombreVM.vdi
+									VBoxManage modifyhd $NombreVM.vdi --move ~/VirtualBox\ VMs/$NombreVM
+									VBoxManage storageattach $NombreVM --type dvddrive --storagectl IDE --device 0 --port 1 --medium $ruta
+									break
+								else
+									echo "Esa opcion no es valida."
+									sleep 1
+								fi
+							done
 							break
 						else
 							echo "Eso no es una iso."
@@ -146,11 +169,34 @@ crear_vm()
 						busqueda=`ls $ruta | grep -o '.iso'`
 						if [ $busqueda = '.iso' ];
 						then
-							VBoxManage convertfromraw $ruta $NombreVM.vdi --format vdi
-							VBoxManage modifyhd ./$NombreVM.vdi --resize $disco
-							VBoxManage storagectl $NombreVM --name SATA --add sata
-							VBoxManage storageattach $NombreVM --type hdd --storagectl SATA --port 0 --medium $NombreVM.vdi
-							VBoxManage modifyhd $NombreVM.vdi --move ~/VirtualBox\ VMs/$NombreVM
+							while true;
+							do
+								clear
+								echo "¿Que tipo de controlador quieres?"
+								echo "Opcion 1- SATA"
+								echo "Opcion 2- IDE"
+								read controlador
+								if [ $controlador -eq 1 ];
+								then
+									VBoxManage createhd disk --filename $NombreVM --size $disco
+									VBoxManage storagectl $NombreVM --name SATA --add sata
+									VBoxManage storageattach $NombreVM --type hdd --storagectl SATA --device 0 --port 0 --medium $NombreVM.vdi
+									VBoxManage modifyhd *.vdi --move ~/VirtualBox\ VMs/$NombreVM
+									VBoxManage storageattach $NombreVM --type dvdrive --storagectl SATA --device 0 --port 1 --medium $ruta
+									break
+								elif [ $controlador -eq 2 ];
+								then
+									VBoxManage createhd disk --filename $NombreVM --size $disco
+									VBoxManage storagectl $NombreVM --name IDE --add ide
+									VBoxManage storageattach $NombreVM --type hdd --storagectl IDE --device 0 --port 0 --medium $NombreVM.vdi
+									VBoxManage modifyhd *.vdi --move ~/VirtualBox\ VMs/$NombreVM
+									VBoxManage storageattach $NombreVM --type dvddrive --storagectl IDE --device 0 --port 1 --medium $ruta
+									break
+								else
+									echo "Esa opcion no es valida."
+									sleep 1
+								fi
+							done
 							break
 						else
 							echo "Eso no es una iso."
