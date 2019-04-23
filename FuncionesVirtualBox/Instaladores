@@ -95,8 +95,8 @@ instalar_dialog()
 instalar_figlet()
 {
 	clear
-	dialog=`dpkg -s figlet | grep -o installed`
-	if [ $dialog = "installed" ];
+	figlet=`dpkg -s figlet | grep -o installed`
+	if [ $figlet = "installed" ];
 	then
 		clear
 		echo "Figlet esta instalado."

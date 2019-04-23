@@ -10,6 +10,10 @@
 while true;
 do
 	clear
+	instaladorfeh=`dpkg -s feh | egrep -o installed`
+	instalarvbox=`dpkg -s virtualbox-6.0 | grep -o installed`
+	dialog=`dpkg -s dialog | grep -o installed`
+	figlet=`dpkg -s figlet | grep -o installed`
 	echo -e "\e[0m"
 	echo -e "\e[34m"
 	figlet "VirtualBash"
@@ -21,7 +25,7 @@ do
 	echo -e "\e[32mOpcion 2-Iniciar MV.\e[0m"
 	echo -e "\e[97mOpcion 3-Crear MV.\e[0m"
 	echo -e "\e[31mOpcion 4-Estadisticas MV.\e[0m"
-	echo -e "\e[35mOpcion 5-Controlar MV.(Maquinas Activas)\e[0m"
+	echo -e "\e[36mOpcion 5-Controlar MV.(Maquinas Activas)\e[0m"
 	echo -e "\e[33mOpcion 6-Modificar MV.\e[0m"
 	echo -e "\e[96mOpcion 7-Implantar ISO.\e[0m"
 	echo -e "\e[37mOpcion 8-Eliminar MV.\e[0m"

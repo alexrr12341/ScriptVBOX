@@ -38,77 +38,74 @@ implantar_iso()
 	then
 		while true;
 		do
-			echo -e "\e[96m"
-			if [ $disco -ne 0 ];
+		
+			clear
+			echo "Busqueda de ISO"
+			echo "---------------"
+			echo "1- Modo Dialog"
+			echo "2- Modo Texto"
+			echo "0- Salir"
+			echo "Seleccione un modo de Implantación de la ISO."
+			read ISO
+			if [ $ISO -eq 1 ];
 			then
+				dialog --fselect /home/$USER 0 0 2> ruta.txt
 				clear
-				echo "Busqueda de ISO"
-				echo "---------------"
-				echo "1- Modo Dialog"
-				echo "2- Modo Texto"
-				echo "0- Salir"
-				echo "Seleccione un modo de Implantación de la ISO."
-				read ISO
-				if [ $ISO -eq 1 ];
+				echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
+				read respuesta
+				if [ $respuesta = 'S' -o $respuesta = 's' ];
 				then
-					dialog --fselect /home/$USER 0 0 2> ruta.txt
-					clear
-					echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
-					read respuesta
-					if [ $respuesta = 'S' -o $respuesta = 's' ];
+					puerto=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
+					controlator=`VBoxManage showvminfo $maquina | grep 'Storage\ Controller\ Name' | cut -d " " -f 16`
+					ruta=`cat ruta.txt`
+					busqueda=`ls $ruta | grep -o '.iso'`
+					if [ $busqueda = '.iso' ];
 					then
-						puerto=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
-						controlator=`VBoxManage showvminfo $maquina | grep 'Storage\ Controller\ Name' | cut -d " " -f 16`
-						ruta=`cat ruta.txt`
-						busqueda=`ls $ruta | grep -o '.iso'`
-						if [ $busqueda = '.iso' ];
+						if [ $puerto -gt 1 -a $controlator = 'IDE' ];
 						then
-							if [ $puerto -gt 1 -a $controlator = 'IDE' ];
-							then
-								echo "El controlador IDE solo soporta un puerto principal y otro secundario."
-								sleep 1
-							else
-								VBoxManage storageattach $maquina --type dvddrive --storagectl $controlator --device 0 --port $puerto --medium $ruta
-								break
-							fi
+							echo "El controlador IDE solo soporta un puerto principal y otro secundario."
+							sleep 1
 						else
-							echo "Eso no es una iso."
+							VBoxManage storageattach $maquina --type dvddrive --storagectl $controlator --device 0 --port $puerto --medium $ruta
+							break
 						fi
+					else
+						echo "Eso no es una iso."
 					fi
-				elif [ $ISO -eq 2 ];
-				then
-					echo "Escriba la ruta de su ISO."
-					read ruta
-					clear
-					echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
-					if [ $respuesta = 'S' -o $respuesta = 's' ];
-					then
-						puerto=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
-						controlator=`VBoxManage showvminfo $maquina | grep 'Storage\ Controller\ Name' | cut -d " " -f 16`
-						ruta=`cat ruta.txt`
-						busqueda=`ls $ruta | grep -o '.iso'`
-						if [ $busqueda = '.iso' ];
-						then
-							if [ $puerto -gt 1 -a $controlador = "IDE" ];
-							then
-								echo "El controlador IDE solo soporta un puerto principal y otro secundario."
-								sleep 1
-							else
-								VBoxManage storageattach $maquina --type dvddrive --storagectl $controlator --device 0 --port $puerto --medium $ruta
-								break
-							fi
-						else
-							echo "Eso no es una iso."
-						fi
-
-					fi
-				elif [ $ISO -eq 0 ];
-				then
-					break
 				fi
-			else
+			elif [ $ISO -eq 2 ];
+			then
+				echo "Escriba la ruta de su ISO."
+				read ruta
+				clear
+				echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
+				if [ $respuesta = 'S' -o $respuesta = 's' ];
+				then
+					puerto=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
+					controlator=`VBoxManage showvminfo $maquina | grep 'Storage\ Controller\ Name' | cut -d " " -f 16`
+					ruta=`cat ruta.txt`
+					busqueda=`ls $ruta | grep -o '.iso'`
+					if [ $busqueda = '.iso' ];
+					then
+						if [ $puerto -gt 1 -a $controlador = "IDE" ];
+						then
+							echo "El controlador IDE solo soporta un puerto principal y otro secundario."
+							sleep 1
+						else
+							VBoxManage storageattach $maquina --type dvddrive --storagectl $controlator --device 0 --port $puerto --medium $ruta
+							break
+						fi
+					else
+						echo "Eso no es una iso."
+					fi
+
+				fi
+			elif [ $ISO -eq 0 ];
+			then
 				break
 			fi
 		done
+	else
+		break	
 	fi	
 }
