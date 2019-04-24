@@ -13,7 +13,7 @@ do
 	clear
 	instalarvbox52=`dpkg -s virtualbox-5.2 | grep -o installed`
         instalarvbox6=`dpkg -s virtualbox-6.0 | grep -o installed`
-	if [ $instalarvbox6 = "installed" -o $instalarvbox52 = "installed" ];
+	if [ $instalarvbox6="installed" -o $instalarvbox52="installed" ];
 	then
 		echo -e "\e[0m"
 		echo -e "\e[34m"
@@ -31,7 +31,7 @@ do
 		echo -e "\e[96mOpcion 7-Implantar ISO.\e[0m"
 		echo -e "\e[37mOpcion 8-Eliminar MV.\e[0m"
 		echo -e "\e[91mOpcion 0-Salir.\e[0m"
-		read opcion
+		read -p 'Opcion: ' opcion
 		#La opción 1 habrá que ejecutarla como root, las demás como usuario, cada opción llama a una función.
 		if [ $opcion -eq 1 ];
 		then
@@ -120,7 +120,7 @@ do
 		echo "Seleccione una Opcion:"
 		echo -e "\e[36mOpcion 1-Instalar Programas.(root)\e[0m"
 		echo -e "\e[91mOpcion 0-Salir.\e[0m"
-		read opcion
+		read -p 'Opcion: ' opcion
 		if [ $opcion -eq 1 ];
 		then
 			if [ $USER = "root" ];
@@ -134,8 +134,10 @@ do
 			else
 				echo "No se podrá instalar los programas, no está como root."
 				sleep 1
-			elif [ $opcion -eq 0 ];
-			then
-				break
 			fi
+		elif [ $opcion -eq 0 ];
+		then
+			break
+		fi
+	fi
 done
