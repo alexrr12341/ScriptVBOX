@@ -38,7 +38,7 @@ implantar_iso()
 	then
 		while true;
 		do
-		
+			#Te da dos modos de implantarla,con el programa Dialog o escribiendo tu mismo la ruta, tiene que acabar con .iso
 			clear
 			echo "Busqueda de ISO"
 			echo "---------------"

@@ -39,6 +39,7 @@ controlar_vm()
 	do
 		if [ $opcion -ne 0 ];
 		then
+			#Tienes varias opciones que simbolizan las acciones que va a realizar la máquina marcada
 			echo "Opcion 1-Reanudar"
 			echo "Opcion 2-Pausar"
 			echo "Opcion 3-Apagar"

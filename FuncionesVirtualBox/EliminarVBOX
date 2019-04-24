@@ -24,6 +24,7 @@ eliminar_vm()
 			break
 		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
 		then
+			#Si le das a S la máquina se borrará junto a su carpeta
 			echo "¿Estas seguro de que quieres eliminar la máquina ${Menu[$opcion]}? [S para eliminar]"
 			read confirmacion
 			if [ $confirmacion = "s" -o $confirmacion = "S" ];

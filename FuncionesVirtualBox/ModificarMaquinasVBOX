@@ -53,6 +53,7 @@ modificar_vm()
 			then
 				while true;
 				do
+					#Cuando la opcion es 1, puedes o poner un modo NAT o el bridge, que coge todas tus interfaces de Red
 					clear
 					echo "Opcion 1-Activar modo NAT."
 					echo "Opcion 2-Activar modo Bridge."
@@ -102,6 +103,7 @@ modificar_vm()
 			then
 				while true;
 				do
+					#Si la opcion es la 2,puedes administrar los discos duros de tu máquina virtual
 					echo "Opcion 1-Aumentar Espacio de Disco."
 					echo "Opcion 2-Añadir Nuevo Disco."
 					echo "Opcion 3-Eliminar Disco."
@@ -109,6 +111,7 @@ modificar_vm()
 					read disco
 					if [ $disco -eq 1 ];
 					then
+						#Para aumentar el tamaño de disco, si no tienes discos no te deja y si hay discos, te da a elegir y te pregunta por un nuevo tamaño
 						cuenta=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
 						if [ $cuenta -gt 0 ];
 						then
@@ -150,6 +153,7 @@ modificar_vm()
 						fi
 					elif [ $disco -eq 2 ];
 					then
+						#Si la opción es 2, busca el puerto libre de la máquina y su controlador y te lo añade a tu máquina y lo mueve a la carpeta
 						megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
 						echo -n "¿Cual es el tamaño del nuevo disco?" && echo -n "(1024 a " && echo "$megas (En megas))"
 						discos=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
@@ -181,6 +185,7 @@ modificar_vm()
 						fi
 					elif [ $disco -eq 3 ];
 					then
+						#Si la opcion es 3,nos da a elegir los discos que borrar, si lo borras, busca su puerto y se desvincula de la máquina y se borra de su carpeta
 						cuenta=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
 						if [ $cuenta -gt 0 ];
 						then
@@ -235,6 +240,8 @@ modificar_vm()
 				done
 			elif [ $pedido -eq 3 ];
 			then
+				#Si la opcion es 3, te pregunta sobre cual va a ser la nueva RAM
+				#El comando memoria busca la memoria RAM disponible
 				memoria=$(free -m | grep Mem | awk {'print $2'})
 				echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(512 a " && echo "$memoria (En megas))"
 				read ram
@@ -258,6 +265,7 @@ modificar_vm()
 				VBoxManage modifyvm $maquina --memory $ram
 			elif [ $pedido -eq 4 ];
 			then
+				#Si la opcion es 4, te pregunta cuantas CPUs vas a poner a tu pc
 				echo -n "¿Cuantas CPUs quieres poner a tu MV? " &&  echo -n "(1 a" && echo " `nproc --all`)"
 				read cpu
 				#Este comando busca las CPUs que tiene el pc, tanto logicas como reales.
