@@ -10,9 +10,9 @@
 while true;
 do
 	#Las funciones echo -e simbolizan las letras que se cambian de color en la terminal.
-	clear
 	instalarvbox52=`dpkg -s virtualbox-5.2 | grep -o installed`
         instalarvbox6=`dpkg -s virtualbox-6.0 | grep -o installed`
+	clear
 	if [ $instalarvbox6="installed" -o $instalarvbox52="installed" ];
 	then
 		echo -e "\e[0m"
