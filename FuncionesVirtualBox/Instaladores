@@ -2,6 +2,7 @@
 #Este comando instalara feh.
 instalar_feh()
 {
+	#Si detecta que feh está instalado no se volverá a instalar, en caso contrario si.
 	instaladorfeh=`dpkg -s feh | egrep -o installed`
 	if [ $instaladorfeh = "installed" ];
 	then
@@ -30,9 +31,11 @@ instalar_feh()
 #Este comando instalara virtualbox.
 instalar_vbox()
 {
+	#Esto hace que si detecta que tienes vbox 5.2 o 6.0 instalado pues te lo detecte como instalado, sino se procede a instalarse automaticamente
 	clear
-        instalarvbox=`dpkg -s virtualbox-6.0 | grep -o installed`
-        if [ $instalarvbox = "installed" ];
+	instalarvbox52=`dpkg -s virtualbox-5.2 | grep -o installed`
+        instalarvbox6=`dpkg -s virtualbox-6.0 | grep -o installed`
+        if [ $instalarvbox6 = "installed" -o $instalarvbox52 = "installed" ];
 	then
 		clear
                 echo "VirtualBox esta instalado."
@@ -45,6 +48,7 @@ instalar_vbox()
 		then
 			if [ $USER = 'root' ];
 			then
+				#Pregunta por tu distribución y te la añade a sources.list y las claves de virtualbox
 				read -p "¿Cual es su distribucion de linux? [stretch,jessie...] " distribucion
 				echo "deb https://download.virtualbox.org/virtualbox/debian $distribucion contrib" >> /etc/apt/sources.list
 				wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -
@@ -65,6 +69,7 @@ instalar_vbox()
 
 instalar_dialog()
 {
+	#Si detecta que dialog está instalado no se volverá a instalar, en caso contrario si.
 	clear
 	dialog=`dpkg -s dialog | grep -o installed`
 	if [ $dialog = "installed" ];
@@ -94,6 +99,7 @@ instalar_dialog()
 
 instalar_figlet()
 {
+	#Si detecta que figlet está instalado no se instalará, en caso contrario si.
 	clear
 	figlet=`dpkg -s figlet | grep -o installed`
 	if [ $figlet = "installed" ];

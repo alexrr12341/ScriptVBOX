@@ -4,6 +4,7 @@ estadisticas_vm()
 	clear
 	while true;
 	do
+		#Esto busca todas las máquinas que tengas creadas en VBOX
 		VBoxManage list -s vms | cut -d '"' -f 2 > maquinas.txt
 		typeset -a Menu
 		exec 3< ./maquinas.txt
@@ -24,6 +25,7 @@ estadisticas_vm()
 			break
 		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
 		then
+			#Esto hace que te de algunas características de tu máquina, las mas básicas
 			echo -e "\e[0m"
 			VBoxManage showvminfo ${Menu[$opcion]} | grep --color=never Name:
 			VBoxManage showvminfo ${Menu[$opcion]} | grep  --color=never Guest\ OS

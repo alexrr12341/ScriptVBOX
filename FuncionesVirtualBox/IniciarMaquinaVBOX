@@ -25,6 +25,7 @@ iniciar_vm()
 			break
 		elif [ $opcion -ge 1 -a $opcion -le ${#Menu[*]} ];
 		then
+			#Esto hace que la máquina que has escogido empiece.
 			echo -e "\e[0m"
 			VBoxManage startvm ${Menu[$opcion]}
 			break

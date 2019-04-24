@@ -1,6 +1,7 @@
 #!/bin/bash
 crear_vm()
 {
+	#Te pregunta por el nombre que le quieres poner a la máquina virtual y detecta si ya está registrada en VirtualBox
 	clear
 	read -p "¿Como quieres nombrar a dicha maquina virtual? " NombreVM
 	parametro=$(VBoxManage list -s vms | cut -d '"' -f 2 | egrep -co $NombreVM$)
@@ -19,6 +20,7 @@ crear_vm()
 		else
 			while true;
 			do
+				#Si la CPU pedida es el máximo o el mínimo de lo pedido, le salta un error y te vuelve a preguntar hasta que la introduzcas bien
 				echo "¿Usted planea destruir su ordenador?"
 				echo -n "¿Cuantas CPUs quieres poner a tu MV? " &&  echo -n "(1 a" && echo " `nproc --all`)"
 				read cpu
@@ -39,6 +41,7 @@ crear_vm()
 		else
 			while true;
 			do
+				#Si la RAM pedida es el máximo o el mínimo de lo pedido, le salta un error y te vuelve a preguntar hasta que la introduzcas bien
 				echo "¿Usted planea destruir su ordenador?"
 				echo -n "¿Cuanta memoria RAM quiere asignarle a su MV?" && echo -n "(512 a " && echo "$memoria (En megas))"
                 		read ram
@@ -50,7 +53,7 @@ crear_vm()
 			done
 
 		fi
-		#Esto te preguntará sobre el sistema operativo, te dara una lista
+		#Esto te preguntará sobre el sistema operativo, te dara una lista, es simplemente representativo, no tendrá nada que ver con la ISO.
 		while true;
 		do
 			typeset -a MenuSO
@@ -78,7 +81,7 @@ crear_vm()
 				clear
 			fi
 		done      
-			
+		#Esto te pregunta sobre el espacio de disco duro que le darás a la máquina, sino está en los parametros dados, el programa volverá a preguntar.
 		megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
 		echo -n "¿Cuanto espacio de disco quieres añadirle a tu máquina virtual? " && echo -n "(1024 a " && echo "$megas (En megas))"
 		read disco
@@ -100,6 +103,7 @@ crear_vm()
 		fi
 		while true;
 		do
+			#Esto te preguntará sobre la implantación de una ISO en una máquina, te da dos modos de implantarla,con el programa Dialog o escribiendo tu mismo la ruta, tiene que acabar con .iso
 			echo "¿Quieres implantar una ISO al disco? [S para confirmar]"
 			read implant
 			if [ $implant = 'S' -o $implant = 's' ];
@@ -209,6 +213,7 @@ crear_vm()
 					break
 				fi
 			else
+				#Tambien puedes dejar el disco duro vacio, por lo tanto solo se añadirá un disco.
 				echo "¿Estas seguro de querer dejar el disco vacio? [S para confirmar]"
 				read confirmar
 				if [ $confirmar = 'S' -o $confirmar = 's' ];
@@ -220,7 +225,8 @@ crear_vm()
 					break
 				fi
 			fi
-		done		
+		done
+		#Aqui añades todas las características a la máquina
 		VBoxManage modifyvm $NombreVM --cpus $cpu
 		VBoxManage modifyvm $NombreVM --vram 25
 		VBoxManage modifyvm $NombreVM --usbohci on
