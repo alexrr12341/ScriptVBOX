@@ -35,7 +35,7 @@ instalar_vbox()
 	clear
 	instalarvbox52=`dpkg -s virtualbox-5.2 | grep -o installed`
         instalarvbox6=`dpkg -s virtualbox-6.0 | grep -o installed`
-        if [ $instalarvbox6 = "installed" -o $instalarvbox52 = "installed" ];
+        if [ $instalarvbox6="installed" -o $instalarvbox52="installed" ];
 	then
 		clear
                 echo "VirtualBox esta instalado."
