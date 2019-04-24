@@ -106,7 +106,7 @@ crear_vm()
 			#Esto te preguntará sobre la implantación de una ISO en una máquina, te da dos modos de implantarla,con el programa Dialog o escribiendo tu mismo la ruta, tiene que acabar con .iso
 			echo "¿Quieres implantar una ISO al disco? [S para confirmar]"
 			read implant
-			if [ $implant = 'S' -o $implant = 's' ];
+			if [ $implant='S' -o $implant='s' ];
 			then
 				clear
 				echo "Busqueda de ISO"
@@ -167,7 +167,7 @@ crear_vm()
 					read ruta
 					clear
 					echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
-					if [ $respuesta = 'S' -o $respuesta = 's' ];
+					if [ $respuesta='S' -o $respuesta='s' ];
 					then
 						ruta=`cat ruta.txt`
 						busqueda=`ls $ruta | grep -o '.iso'`
@@ -216,7 +216,7 @@ crear_vm()
 				#Tambien puedes dejar el disco duro vacio, por lo tanto solo se añadirá un disco.
 				echo "¿Estas seguro de querer dejar el disco vacio? [S para confirmar]"
 				read confirmar
-				if [ $confirmar = 'S' -o $confirmar = 's' ];
+				if [ $confirmar='S' -o $confirmar='s' ];
 				then
 					VBoxManage createhd disk --filename $NombreVM --size $disco
 					VBoxManage storagectl $NombreVM --name SATA --add sata
