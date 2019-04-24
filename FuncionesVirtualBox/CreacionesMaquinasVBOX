@@ -122,7 +122,7 @@ crear_vm()
 					clear
 					echo -n "¿Es esta la ruta? " && cat ruta.txt && echo " [S para confirmar]"
 					read respuesta
-					if [ $respuesta = 'S' -o $respuesta = 's' ];
+					if [ $respuesta='S' -o $respuesta='s' ];
 					then
 						ruta=`cat ruta.txt`
 						busqueda=`ls $ruta | grep -o '.iso'`
@@ -171,7 +171,7 @@ crear_vm()
 					then
 						ruta=`cat ruta.txt`
 						busqueda=`ls $ruta | grep -o '.iso'`
-						if [ $busqueda = '.iso' ];
+						if [ $busqueda='.iso' ];
 						then
 							while true;
 							do
