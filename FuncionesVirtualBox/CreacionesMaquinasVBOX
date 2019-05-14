@@ -82,7 +82,14 @@ crear_vm()
 			fi
 		done      
 		#Esto te pregunta sobre el espacio de disco duro que le darás a la máquina, sino está en los parametros dados, el programa volverá a preguntar.
-		megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
+		raiz=$(df -m | grep '/dev/[sv]d.*' | awk {'print $6'})
+		if [ $raiz='/' ]
+		then
+			megas=$(df -m | grep '/dev/[sv]d.*' | grep '/' | awk {'print $4'})
+		else
+			echo "No se encontró ningun disco duro."
+			break
+		fi
 		echo -n "¿Cuanto espacio de disco quieres añadirle a tu máquina virtual? " && echo -n "(1024 a " && echo "$megas (En megas))"
 		read disco
 		if [ $disco -lt $megas -a $disco -ge 1024 ];

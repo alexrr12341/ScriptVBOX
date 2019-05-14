@@ -5,4 +5,3 @@ Windows7
 WindowsCore2008
 debian1
 debianNG
-holas

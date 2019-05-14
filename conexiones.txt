@@ -1,0 +1,4 @@
+lo
+enp7s0
+wlp0s20f3
+virbr1
