@@ -1,7 +1,19 @@
+Alexiander
 Buster
+Debian x64 SIN EG
+Debian x64 SIN EG 2
+ImagenesISO
 Mininet-VM
 Windows XP
 Windows7
 WindowsCore2008
 debian1
 debianNG
+debianmulticast1
+debianmulticast2
+pc1
+pc2
+pc3
+r1
+r2
+r3

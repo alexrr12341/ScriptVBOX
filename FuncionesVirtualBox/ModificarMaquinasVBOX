@@ -154,7 +154,7 @@ modificar_vm()
 					elif [ $disco -eq 2 ];
 					then
 						#Si la opción es 2, busca el puerto libre de la máquina y su controlador y te lo añade a tu máquina y lo mueve a la carpeta
-						megas=$(df -m | grep '/dev/[sv]d.*' | awk {'print $4'})
+						megas=$(df -m | grep '/dev/[sv]d.*' | grep '/$' | awk {'print $4'})
 						echo -n "¿Cual es el tamaño del nuevo disco?" && echo -n "(1024 a " && echo "$megas (En megas))"
 						discos=`VBoxManage showvminfo $maquina | egrep -o '[a-zA-Z0-9]{1,}.vdi' | wc -l`
 						controlator=`VBoxManage showvminfo $maquina | grep 'Storage\ Controller\ Name' | cut -d " " -f 16`
